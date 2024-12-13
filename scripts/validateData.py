@@ -5127,7 +5127,12 @@ def request_from_portal_api(server_url, api_name, logger):
     # this may raise a requests.exceptions.RequestException subclass,
     # usually because the URL provided on the command line was invalid or
     # did not include the http:// part
-    response = requests.get(service_url)
+    headers = {}
+
+    if os.environ.get("CBP_API_TOKEN") is not None:
+        headers["Authorization"] = f"Bearer {os.environ.get('CBP_API_TOKEN')}"
+
+    response = requests.get(service_url, headers=headers)
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
@@ -5141,7 +5146,7 @@ def request_from_portal_api(server_url, api_name, logger):
             panel = {}
             gene_panel_id = data_item['genePanelId']
             gene_panel_url = service_url+'/'+gene_panel_id
-            response = requests.get(gene_panel_url).json()
+            response = requests.get(gene_panel_url, headers=headers).json()
             panel['description'] = response['description']
             panel['genes'] = response['genes']
             panel['genePanelId'] = response['genePanelId']
